@@ -21,3 +21,11 @@ This minigrep program was created while following along with the rust programmin
 where query is a word and filename is the name and extension of a file that exists in the top level of the `minigrep` directory.
 
 - Lines that contain the query will be printed to the terminal.
+
+## Issues
+
+If you run this program and an error pops up that says "permission denied (os error 13)", type in the terminal:
+
+`> cargo clean`
+
+then do the run command again. 
