@@ -6,18 +6,18 @@ This minigrep program was created while following along with the rust programmin
 
 ## Usage
 
-Install rust and cargo.
+- Install rust and cargo.
 
-Download the `minigrep` folder.
+- Download the `minigrep` folder.
 
-cd into the `minigrep` folder:
+- cd into the `minigrep` folder:
 
 `> cd minigrep`
 
-Type into the command line:
+- Type into the command line:
 
 `> cargo run <query> <filename>`
 
 where query is a word and filename is the name and extension of a file that exists in the top level of the `minigrep` directory.
 
-Lines that contain the query will be printed to the terminal.
+- Lines that contain the query will be printed to the terminal.
