@@ -22,6 +22,6 @@ This program serves to replicate the functionality of the `tar` archiving utilit
   - t: prints out the names of each file contained in the archive.
   - u: appends the specified files to the end of the specified archive. If any of the files do not exist in the archive, the program will error.
   - x: extracts the files from the specified archive. Overwrites existing files with same names. Errors if the archive name does not exist.
-
-
-
+- <archive_name> must end in .tar
+- None of the commands require files to be specified, however, nothing will be added if they are not specified.
+- The exact path to the files must be specified and they will be created in the same directory when extracted.
