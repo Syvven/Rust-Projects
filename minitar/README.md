@@ -11,9 +11,17 @@ This program serves to replicate the functionality of the `tar` archiving utilit
 - First, make sure you have rust and cargo installed.
 - Clone the repository and cd into the `minitar` directory.
 - Create any files you would like to contain in the Archive, or use the test files in the `test_files` subdirectory.
-- Run in the command line:
+- Run in the command line `> cargo clean` to make sure everything is ready to be run.
+- Arguments to the program are structured as thus:
 
-`> cargo clean`
-   to make sure everything is ready to be run
+`> cargo run <command> <archive_name> <file1> <file2> etc...`
+
+- Commands include:
+  - c: creates archive of specified name and adds the specified files. If the archive already exists, it overwrites existing data. If any of the files don't exist, the program will error.
+  - a: appends specified files to the specified archive. If the archive or any of the files do not exist, the program will error.
+  - t: prints out the names of each file contained in the archive.
+  - u: appends the specified files to the end of the specified archive. If any of the files do not exist in the archive, the program will error.
+  - x: extracts the files from the specified archive. Overwrites existing files with same names. Errors if the archive name does not exist.
+
 
 
