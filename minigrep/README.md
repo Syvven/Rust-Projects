@@ -18,4 +18,6 @@ Type into the command line:
 
 `> cargo run <query> <filename>`
 
+where query is a word and filename is the name and extension of a file that exists in the top level of the `minigrep` directory.
 
+Lines that contain the query will be printed to the terminal.
