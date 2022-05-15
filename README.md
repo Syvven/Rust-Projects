@@ -20,3 +20,8 @@ Included in this repository are multiple programs created while learning the Rus
 - More information in the subdirectory README
 
 ### minitar
+
+- Contained in the `minitar` folder
+- Simple version of the `tar` utility
+- Project originally done in C
+- More information in the subdirectory README
