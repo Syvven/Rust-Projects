@@ -11,4 +11,9 @@ This program serves to replicate the functionality of the `tar` archiving utilit
 - First, make sure you have rust and cargo installed.
 - Clone the repository and cd into the `minitar` directory.
 - Create any files you would like to contain in the Archive, or use the test files in the `test_files` subdirectory.
-- 
+- Run in the command line:
+
+`> cargo clean`
+   to make sure everything is ready to be run
+
+
