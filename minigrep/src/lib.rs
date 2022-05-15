@@ -13,15 +13,18 @@ pub struct Config {
 // member functions
 impl Config {
     // creates a new instance of the Config struct with the input values
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            // if the arguments are less than 3, return an error
-            return Err("usage: cargo run <word> <filename>")
-        }
+    pub fn new(mut args: env::Args) -> Result<Config, &'static str> {
+        args.next();
 
-        // extract and clone the arguments
-        let query = args[1].clone();
-        let filename = args[2].clone();
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a query string."),
+        };
+
+        let filename = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file name."),
+        };
 
         // see if the case sensitive env variable is set
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
@@ -37,30 +40,20 @@ pub fn search_case_insensitive<'a>(
 ) -> Vec<&'a str> {
     // sets the query to lowercase
     let query = query.to_lowercase();
-    let mut results = Vec::new();
 
     // gets the lines that contain the query
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
-            results.push(line);
-        }
-    }
-
-    results
+    contents
+        .lines()
+        .filter(|line| line.to_lowercase().contains(&query))
+        .collect()
 }
 
 // search function for if case sensitive is set
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut results = Vec::new();
-
-    // gets the lines that contain the query
-    for line in contents.lines() {
-        if line.contains(query) {
-            results.push(line);
-        }
-    }
-
-    results
+    contents   
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 // main run function

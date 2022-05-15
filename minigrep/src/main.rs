@@ -6,11 +6,8 @@ use minigrep::Config;
 
 // main sets up the logic of the program
 fn main() {
-    // extract the passed in arguments
-    let args: Vec<String> = env::args().collect();
-
     // setup the config struct with the arguments and handle errors
-    let config = Config::new(&args).unwrap_or_else(|err| {
+    let config = Config::new(env::args()).unwrap_or_else(|err| {
         eprintln!("Probelm parsing arguments: {}", err);
         process::exit(1);
     });
