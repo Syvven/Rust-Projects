@@ -8,6 +8,13 @@ Included in this repository are multiple programs created while learning the Rus
 
 ### Guessing Game
 
-- Contained in guessing_game folder
+- Contained in `guessing_game` folder
 - Simple guessing game
 - Made based off the guidance of the book
+
+### minigrep
+
+- Contained in `minigrep` folder
+- As the name indicates, a mini version of the grep command line program
+- Made based off the guidance of the book
+- More information in the subdirectory README
