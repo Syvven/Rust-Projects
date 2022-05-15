@@ -1,10 +1,11 @@
-use std::env;
-use std::process;
 use std::path::Path;
-use std::ffi::OsStr;
 use std::error::Error;
-use std::fs;
+use tar::Header;
 use std::os::unix::fs::MetadataExt;
+use std::fs::{self, OpenOptions};
+use std::io::{BufReader, BufWriter, Write, BufRead};
+use std::{env, process};
+use std::ffi::{OsStr, CStr};
 
 #[derive(Debug)]
 pub struct Config {
@@ -56,69 +57,110 @@ impl Config {
     }
 }
 
-#[derive(Debug)]
-pub struct TarHeader {
-    pub name: String,
-    pub mode: String,
-    pub uid: String,
-    pub gid: String,
-    pub size: String,
-    pub mtime: String,
-    pub chksum: String,
-    pub typeflag: String,
-    pub linkname: String,
-    pub magic: String,
-    pub version: String,
-    pub uname: String,
-    pub gname: String,
-    pub devmajor: String,
-    pub devminor: String,
-    pub prefix: String,
-    pub padding: String,
+pub fn init_header(filename: &str) -> Result<tar::Header, Box<dyn Error>> {
+    let metadata = fs::metadata(filename)?;
+    let mut header = Header::new_ustar();
+    
+    header.set_metadata(&metadata);
+    header.set_path(filename)?;
+
+    let dev = metadata.dev();
+    let major = (dev & 0xfff00) >> 8;
+    let minor = (dev & 0x000ff) | ((dev >> 12) & 0xfff00);
+    header.set_device_major(major.try_into()?)?;
+    header.set_device_minor(minor.try_into()?)?;
+
+    let pwd = unsafe { libc::getpwuid(metadata.uid()) };
+    if pwd.is_null() {
+        return Err("libc::getpwuid failed.".into());
+    }
+    let c_str: &CStr = unsafe { CStr::from_ptr((*pwd).pw_name) };
+    let str_slice: &str = c_str.to_str()?;
+    header.set_username(str_slice)?;
+
+
+    let grp = unsafe { libc::getgrgid(metadata.gid()) };
+    if grp.is_null() {
+        return Err("libc::getgrgid failed.".into());
+    }
+    let c_str: &CStr = unsafe { CStr::from_ptr((*grp).gr_name) };
+    let str_slice: &str = c_str.to_str()?;
+    header.set_groupname(str_slice)?;
+    
+    Ok(header)
 }
 
-impl TarHeader {
-    pub fn new(filename: &String) -> Result<TarHeader, Box<dyn Error>> {
-        let mut header = TarHeader {
-            name: String::with_capacity(100),
-            mode: String::with_capacity(8),
-            uid: String::with_capacity(8),
-            gid: String::with_capacity(8),
-            size: String::with_capacity(12),
-            mtime: String::with_capacity(12),
-            chksum: String::with_capacity(8),
-            typeflag: String::with_capacity(1),
-            linkname: String::with_capacity(100),
-            magic: String::with_capacity(6),
-            version: String::with_capacity(2),
-            uname: String::with_capacity(32),
-            gname: String::with_capacity(32),
-            devmajor: String::with_capacity(8),
-            devminor: String::with_capacity(8),
-            prefix: String::with_capacity(155),
-            padding: String::with_capacity(12),
-        };
+pub fn remove_trailing_zeros(config: &Config) -> Result<(), Box<dyn Error>> {
+    let archive = OpenOptions::new()
+        .write(true)
+        .open(&config.archive_name)?;
+    
+    archive.set_len(archive.metadata()?.len()-1024)?;
+    Ok(())
+}
 
-        let magic = "ustar";
-        let regtype = "0";
-        let dirtype = "5";
+pub fn archiving_helper(config: &Config, create: bool) -> Result<(), Box<dyn Error>> {
+    let archive = if create {
+        OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open(&config.archive_name)?
+    } else {
+        OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(true)
+            .open(&config.archive_name)?
+    };
 
-        let metadata = fs::metadata(filename)?;
-        println!("{:?}", metadata);
-        println!("{:?}", metadata.mode());
+    let mut writer = BufWriter::new(&archive);
+    
+    for file in config.files.iter() {
+        let f = OpenOptions::new()
+            .read(true)
+            .open(file)?;
 
-        header.name.push_str(&filename[..]);
+        let header = init_header(file)?;
 
-        Ok(header)
+        writer.write_all(header.as_bytes())?;
+
+        let mut reader = BufReader::new(f);
+        let mut length = 1;
+        let mut total_len = 0;
+
+        while length > 0 {
+            let buffer = reader.fill_buf()?;
+            
+            writer.write(buffer)?;
+
+            length = buffer.len();
+            total_len += length;
+
+            reader.consume(length);
+        }
+
+        let pad: usize = 512 - (total_len % 512);
+        let zeros = vec![0; pad];
+        writer.write_all(&zeros)?;
     }
+
+    let zeros = vec![0; 1024];
+    writer.write_all(&zeros)?;
+
+    Ok(())
 }
 
 pub fn create_archive(config: &Config) -> Result<(), Box<dyn Error>> {
-    let tarheader = TarHeader::new(&config.files[0])?;
+    archiving_helper(config, true)?;
+
     Ok(())
 }
 
 pub fn append_to_archive(config: &Config) -> Result<(), Box<dyn Error>> {
+    remove_trailing_zeros(config)?;
+    archiving_helper(config, false)?;
+
     Ok(())
 }
 
