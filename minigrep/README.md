@@ -9,5 +9,9 @@ This minigrep program was created while following along with the rust programmin
 - Install rust and cargo.
 - Download the `minigrep` folder.
 - cd into the `minigrep` folder:
+
 `> cd minigrep`
-- 
+
+- Type into the command line:
+
+`> cargo run <query> <filename>`
