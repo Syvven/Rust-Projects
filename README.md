@@ -25,3 +25,9 @@ Included in this repository are multiple programs created while learning the Rus
 - Simple version of the `tar` utility
 - Project originally done in C
 - More information in the subdirectory README
+
+### swish
+
+- Will be contained in `swish` folder
+- Simple command line utility with piping
+- Will be started soon...
